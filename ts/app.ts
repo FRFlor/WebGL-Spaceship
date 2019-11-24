@@ -8,6 +8,8 @@ const engine = new BABYLON.Engine(canvas, true);
 
 const createScene = () => {
     const scene = new BABYLON.Scene(engine);
+    const ambient = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(1, 1, 0), scene);
+    ambient.intensity = 0.5;
 
     registerMaterials(scene);
 
@@ -27,9 +29,6 @@ const createScene = () => {
         }, 500);
     });
 
-
-    const origin = BABYLON.MeshBuilder.CreateBox("origin", {size: 0.5}, scene);
-    origin.position.set(0, 0, 0);
 
     const bottomWall = BABYLON.MeshBuilder.CreateBox('bottomWall', {height: 10, width: 100, depth: 1000}, scene);
     const topWall = BABYLON.MeshBuilder.CreateBox('topWall', {height: 10, width: 100, depth: 1000}, scene);

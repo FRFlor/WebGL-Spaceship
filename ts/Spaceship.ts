@@ -1,10 +1,9 @@
-import {Mesh} from "babylonjs";
+import {Mesh, ParticleSystem} from "babylonjs";
 import {Scene} from "babylonjs/scene";
 import * as BABYLON from "babylonjs";
 import {renderAxes} from "./helpers";
 import {IUserInput} from "../types";
 import {Material} from "babylonjs/Materials/material";
-import {StandardMaterial} from "babylonjs/Materials/standardMaterial";
 
 const stabilizationStepAngle: number = BABYLON.Tools.ToRadians(1);
 const maneuverStepAngle: number = BABYLON.Tools.ToRadians(3);
@@ -15,7 +14,7 @@ const forwardSpeed: number = 1;
 
 export class Spaceship {
     public wrapper: Mesh;
-    public hasCollided: boolean = false;
+    public isInvulnerable: boolean = true;
 
     private scene: Scene;
     private debugMode: boolean = true;
@@ -23,6 +22,9 @@ export class Spaceship {
 
     private defaultMaterials: Material[];
     private damagedMaterial: Material;
+
+    private engineParticles: ParticleSystem;
+    private smokeParticles: ParticleSystem;
 
     constructor(scene: Scene, userInputs: IUserInput) {
         this.scene = scene;
@@ -49,52 +51,10 @@ export class Spaceship {
         const flashLight = new BABYLON.PointLight("shipLight", new BABYLON.Vector3(0, 0, 0), scene);
         flashLight.parent = this.wrapper;
 
-        const particleSystem = new BABYLON.ParticleSystem("particles", 2000, scene);
-        //Texture of each particle
-        particleSystem.particleTexture = new BABYLON.Texture("./resources/textures/flare.png", scene);
-
-        // Where the particles come from
-        particleSystem.emitter = this.wrapper; // the starting object, the emitter
-        particleSystem.minEmitBox = new BABYLON.Vector3(-1, -0.5, -1.5); // Starting all from
-        particleSystem.maxEmitBox = new BABYLON.Vector3(1, 0.5, -1.5); // To...
-
-        // Colors of all particles
-        particleSystem.color1 = new BABYLON.Color4(0.7, 0.8, 1.0, 1.0);
-        particleSystem.color2 = new BABYLON.Color4(0.2, 0.5, 1.0, 1.0);
-        particleSystem.colorDead = new BABYLON.Color4(0, 0, 0.2, 0.0);
-
-        // Size of each particle (random between...
-        particleSystem.minSize = 0.1;
-        particleSystem.maxSize = 0.5;
-
-        // Life time of each particle (random between...
-        particleSystem.minLifeTime = 0.3;
-        particleSystem.maxLifeTime = 1.5;
-
-        // Emission rate
-        particleSystem.emitRate = 1500;
-
-        // Blend mode : BLENDMODE_ONEONE, or BLENDMODE_STANDARD
-        particleSystem.blendMode = BABYLON.ParticleSystem.BLENDMODE_ONEONE;
-
-        // Set the gravity of all particles
-        particleSystem.gravity = new BABYLON.Vector3(0, -9.81, 0);
-
-        // Direction of each particle after it has been emitted
-        particleSystem.direction1 = new BABYLON.Vector3(-7, 8, 3);
-        particleSystem.direction2 = new BABYLON.Vector3(7, 8, -3);
-
-        // Angular speed, in radians
-        particleSystem.minAngularSpeed = 0;
-        particleSystem.maxAngularSpeed = Math.PI;
-
-        // Speed
-        particleSystem.minEmitPower = 1;
-        particleSystem.maxEmitPower = 3;
-        particleSystem.updateSpeed = 0.005;
-
-        // Start the particle system
-        particleSystem.start();
+        this.initializeEngineParticles();
+        this.engineParticles.start();
+        this.initializeSmokeParticles();
+        setTimeout(() => this.isInvulnerable = false, 1000);
 
     }
 
@@ -135,22 +95,24 @@ export class Spaceship {
     }
 
     private moveForward() {
-        if (this.hasCollided) {
+        if (this.isInvulnerable) {
             this.wrapper.position.z += forwardSpeed;
             return;
         }
         const desiredZ = this.wrapper.position.z + forwardSpeed;
         this.wrapper.moveWithCollisions(new BABYLON.Vector3(0, 0 , forwardSpeed));
-        const hasTriggeredCollision = !this.hasCollided && desiredZ - this.wrapper.position.z > forwardSpeed/2;
+        const hasTriggeredCollision = !this.isInvulnerable && desiredZ - this.wrapper.position.z > forwardSpeed/2;
 
         if (hasTriggeredCollision) {
-            this.hasCollided = true;
+            this.isInvulnerable = true;
+            this.engineParticles.stop();
+            this.smokeParticles.start();
             this.wrapper.getChildMeshes().forEach((mesh) => mesh.material = this.damagedMaterial);
             window.dispatchEvent(new Event('spaceship-collided'));
 
             setTimeout(() => {
                 this.wrapper.getChildMeshes().forEach((mesh, index) => mesh.material = this.defaultMaterials[index]);
-                this.hasCollided = false;
+                this.isInvulnerable = false;
             }, 1000);
         }
     }
@@ -179,5 +141,98 @@ export class Spaceship {
                 this.wrapper.rotation[axis] = 0;
             }
         });
+    }
+
+    private initializeEngineParticles() {
+        this.engineParticles = new BABYLON.ParticleSystem("particles", 2000, this.scene);
+        //Texture of each particle
+        this.engineParticles.particleTexture = new BABYLON.Texture("./resources/textures/flare.png", this.scene);
+
+        // Where the particles come from
+        this.engineParticles.emitter = this.wrapper; // the starting object, the emitter
+        this.engineParticles.minEmitBox = new BABYLON.Vector3(-1, -0.5, -1.5); // Starting all from
+        this.engineParticles.maxEmitBox = new BABYLON.Vector3(1, 0.5, -1.5); // To...
+
+        // Colors of all particles
+        this.engineParticles.color1 = new BABYLON.Color4(0.7, 0.8, 1.0, 1.0);
+        this.engineParticles.color2 = new BABYLON.Color4(0.2, 0.5, 1.0, 1.0);
+        this.engineParticles.colorDead = new BABYLON.Color4(0, 0, 0.2, 0.0);
+
+        // Size of each particle (random between...
+        this.engineParticles.minSize = 0.1;
+        this.engineParticles.maxSize = 0.2;
+
+        // Life time of each particle (random between...
+        this.engineParticles.minLifeTime = 0.1;
+        this.engineParticles.maxLifeTime = 0.1;
+
+        // Emission rate
+        this.engineParticles.emitRate = 1500;
+
+        // Blend mode : BLENDMODE_ONEONE, or BLENDMODE_STANDARD
+        this.engineParticles.blendMode = BABYLON.ParticleSystem.BLENDMODE_ONEONE;
+
+        // Set the gravity of all particles
+        this.engineParticles.gravity = new BABYLON.Vector3(0, -9.81, 0);
+
+        // Direction of each particle after it has been emitted
+        this.engineParticles.direction1 = new BABYLON.Vector3(-7, 8, 3);
+        this.engineParticles.direction2 = new BABYLON.Vector3(7, 8, -3);
+
+        // Angular speed, in radians
+        this.engineParticles.minAngularSpeed = 0;
+        this.engineParticles.maxAngularSpeed = Math.PI;
+
+        // Speed
+        this.engineParticles.minEmitPower = 1;
+        this.engineParticles.maxEmitPower = 3;
+        this.engineParticles.updateSpeed = 0.005;
+    }
+
+    private initializeSmokeParticles() {
+        this.smokeParticles = new BABYLON.ParticleSystem("particles", 2000, this.scene);
+        //Texture of each particle
+        this.smokeParticles.particleTexture = new BABYLON.Texture("./resources/textures/flare.png", this.scene);
+
+        // Where the particles come from
+        this.smokeParticles.emitter = this.wrapper; // the starting object, the emitter
+        this.smokeParticles.minEmitBox = new BABYLON.Vector3(-1, -0.5, -1.5); // Starting all from
+        this.smokeParticles.maxEmitBox = new BABYLON.Vector3(1, 0.5, -1.5); // To...
+
+        // Colors of all particles
+        this.smokeParticles.color1 = new BABYLON.Color4(1, 165/255, 0, 1.0);
+        this.smokeParticles.color2 = new BABYLON.Color4(1, 0, 0, 1.0);
+        this.smokeParticles.colorDead = new BABYLON.Color4(128/255, 128/255, 128/255, 1);
+
+        // Size of each particle (random between...
+        this.smokeParticles.minSize = 0.2;
+        this.smokeParticles.maxSize = 0.3;
+
+        // Life time of each particle (random between...
+        this.smokeParticles.minLifeTime = 0.1;
+        this.smokeParticles.maxLifeTime = 0.1;
+
+        // Emission rate
+        this.smokeParticles.emitRate = 1500;
+
+        // Blend mode : BLENDMODE_ONEONE, or BLENDMODE_STANDARD
+        this.smokeParticles.blendMode = BABYLON.ParticleSystem.BLENDMODE_ONEONE;
+
+        // Set the gravity of all particles
+        this.smokeParticles.gravity = new BABYLON.Vector3(0, -9.81, 0);
+
+        // Direction of each particle after it has been emitted
+        this.smokeParticles.direction1 = new BABYLON.Vector3(-7, 8, 3);
+        this.smokeParticles.direction2 = new BABYLON.Vector3(7, 8, -3);
+
+        // Angular speed, in radians
+        this.smokeParticles.minAngularSpeed = 0;
+        this.smokeParticles.maxAngularSpeed = Math.PI;
+
+        // Speed
+        this.smokeParticles.minEmitPower = 1;
+        this.smokeParticles.maxEmitPower = 3;
+        this.smokeParticles.updateSpeed = 0.005;
+
     }
 }
