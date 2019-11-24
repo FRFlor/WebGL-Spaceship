@@ -18,12 +18,15 @@ const createScene = () => {
     origin.position.set(0, 0, 0);
 
     Array.from({length: 200}, (_, index: number) => {
-        const box = BABYLON.MeshBuilder.CreateBox(`box_${index}`, {size: 0.5}, scene);
-        box.position.set(0, 0, index*5);
+        const box = BABYLON.MeshBuilder.CreateBox(`box_${index}`, {size: 1}, scene);
+        box.position.set(0, 0, (index+2)*75);
+        box.checkCollisions = true;
     });
 
     let spaceShip = BABYLON.MeshBuilder.CreateBox("spaceship", {height: 1, width: 4, depth: 5}, scene);
     spaceShip.material = wireframe;
+    spaceShip.ellipsoid = new BABYLON.Vector3(4, 1, 2);
+    spaceShip.checkCollisions = true;
     let local = renderAxes(3, scene);
     local.parent = spaceShip;
 
@@ -53,25 +56,25 @@ const createScene = () => {
         const maxManeuverAngle: number = BABYLON.Tools.ToRadians(20);
 
         if (inputMap["w"] || inputMap["ArrowUp"]) {
-            spaceShip.position.y += 0.1;
+            spaceShip.moveWithCollisions(new BABYLON.Vector3(0, 0.1 , 0));
             if (spaceShip.rotation.x >= -maxManeuverAngle) {
                 spaceShip.addRotation(-maneuverStepAngle, 0, 0);
             }
         }
         if (inputMap["a"] || inputMap["ArrowLeft"]) {
-            spaceShip.position.x -= 0.1;
+            spaceShip.moveWithCollisions(new BABYLON.Vector3(-0.1, 0 , 0));
             if (spaceShip.rotation.z <= maxManeuverAngle) {
                 spaceShip.addRotation(0, 0, maneuverStepAngle);
             }
         }
         if (inputMap["s"] || inputMap["ArrowDown"]) {
-            spaceShip.position.y -= 0.1;
+            spaceShip.moveWithCollisions(new BABYLON.Vector3(0, -0.1 , 0));
             if (spaceShip.rotation.x <= maxManeuverAngle) {
                 spaceShip.addRotation(maneuverStepAngle, 0, 0);
             }
         }
         if (inputMap["d"] || inputMap["ArrowRight"]) {
-            spaceShip.position.x += 0.1;
+            spaceShip.moveWithCollisions(new BABYLON.Vector3(0.1, 0 , 0));
             if (spaceShip.rotation.z >= -maxManeuverAngle) {
                 spaceShip.addRotation(0, 0, -maneuverStepAngle);
             }
@@ -99,7 +102,12 @@ const createScene = () => {
             }
         });
 
-        spaceShip.position.z += 1;
+        const desiredZ = spaceShip.position.z + 1;
+        spaceShip.moveWithCollisions(new BABYLON.Vector3(0, 0 , 1));
+
+        if (spaceShip.position.z > 5 && desiredZ - spaceShip.position.z > 0.5) {
+            // alert('Oh, U DED!!');
+        }
     });
 
     return scene;
