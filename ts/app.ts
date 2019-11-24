@@ -27,8 +27,6 @@ const createScene = () => {
         }, 500);
     });
 
-    // const ambient = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(1, 1, 0), scene);
-    // ambient.intensity = 0.5;
 
     const origin = BABYLON.MeshBuilder.CreateBox("origin", {size: 0.5}, scene);
     origin.position.set(0, 0, 0);
