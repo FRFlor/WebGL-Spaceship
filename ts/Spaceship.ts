@@ -18,25 +18,22 @@ export class Spaceship {
     public hasCollided: boolean = false;
 
     private scene: Scene;
-    private showAxis: boolean = true;
+    private debugMode: boolean = false;
     private userInputs: IUserInput;
 
     private defaultMaterials: Material[];
-    private damagedMaterial: StandardMaterial;
+    private damagedMaterial: Material;
 
     constructor(scene: Scene, userInputs: IUserInput) {
-        const wireframe = new BABYLON.StandardMaterial("wireframeMaterial", scene);
-        wireframe.wireframe = true;
-
         this.scene = scene;
         this.userInputs = userInputs;
 
         this.wrapper = BABYLON.MeshBuilder.CreateBox("spaceship", {height: 1, width: 4, depth: 5}, scene);
-        this.wrapper.material = wireframe;
+        this.wrapper.material = this.debugMode ? this.scene.getMaterialByName('wireframe') : this.scene.getMaterialByName('invisible');
         this.wrapper.ellipsoid = new BABYLON.Vector3(4, 1, 3);
         this.wrapper.checkCollisions = true;
 
-        if (this.showAxis) {
+        if (this.debugMode) {
             const localAxis = renderAxes(3, scene);
             localAxis.parent = this.wrapper;
         }
@@ -46,8 +43,7 @@ export class Spaceship {
             model[0].parent = this.wrapper;
 
             this.defaultMaterials = this.wrapper.getChildMeshes().map((mesh) => mesh.material);
-            this.damagedMaterial = new BABYLON.StandardMaterial("red", scene);
-            this.damagedMaterial.diffuseColor = BABYLON.Color3.Red();
+            this.damagedMaterial = this.scene.getMaterialByName("red");
         });
     }
 
@@ -129,6 +125,4 @@ export class Spaceship {
             }
         });
     }
-
-
 }

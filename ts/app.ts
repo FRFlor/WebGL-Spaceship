@@ -1,12 +1,15 @@
 import * as BABYLON from "babylonjs";
 import "babylonjs-loaders";
 import {Spaceship} from "./Spaceship";
+import {registerMaterials} from "./materials";
 
 const canvas: HTMLCanvasElement = document.getElementById("renderCanvas") as HTMLCanvasElement;
 const engine = new BABYLON.Engine(canvas, true);
 
 const createScene = () => {
     const scene = new BABYLON.Scene(engine);
+
+    registerMaterials(scene);
 
     const inputMap = {};
     scene.actionManager = new BABYLON.ActionManager(scene);
@@ -19,21 +22,18 @@ const createScene = () => {
 
     const light1 = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(1, 1, 0), scene);
     const light2 = new BABYLON.PointLight("light2", new BABYLON.Vector3(0, 1, -1), scene);
-
+    // const light = new BABYLON.SpotLight("star", new BABYLON.Vector3(0, 0, 1000), new BABYLON.Vector3(0, 0, -1), Math.PI / 2, 2 , scene);
     const origin = BABYLON.MeshBuilder.CreateBox("origin", {size: 0.5}, scene);
     origin.position.set(0, 0, 0);
-
-    const metal = new BABYLON.StandardMaterial("grass0", scene);
-    metal.diffuseTexture = new BABYLON.Texture("resources/textures/metal.jpg", scene);
 
     const bottomWall = BABYLON.MeshBuilder.CreateBox('bottomWall', {height: 10, width: 100, depth: 1000}, scene);
     const topWall = BABYLON.MeshBuilder.CreateBox('topWall', {height: 10, width: 100, depth: 1000}, scene);
     const leftWall = BABYLON.MeshBuilder.CreateBox('leftWall', {height: 100, width: 10, depth: 1000}, scene);
     const rightWall = BABYLON.MeshBuilder.CreateBox('rightWall', {height: 100, width: 10, depth: 1000}, scene);
-    bottomWall.material = metal;
-    topWall.material = metal;
-    leftWall.material = metal;
-    rightWall.material = metal;
+    bottomWall.material = scene.getMaterialByName('metal');
+    topWall.material = scene.getMaterialByName('metal');
+    leftWall.material = scene.getMaterialByName('metal');
+    rightWall.material = scene.getMaterialByName('metal');
     bottomWall.position.z = 500;
     topWall.position.z = 500;
     leftWall.position.z = 500;
@@ -60,8 +60,6 @@ const createScene = () => {
     camera.rotationOffset = 180;
     // camera.attachControl(canvas, true);
 
-    let spaceShipCollided = false;
-    // Game/Render loop
     scene.onBeforeRenderObservable.add(() => {
         spaceShip.update();
     });
