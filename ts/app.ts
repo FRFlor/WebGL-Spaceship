@@ -20,6 +20,9 @@ const createScene = () => {
     const metal = new BABYLON.StandardMaterial("grass0", scene);
     metal.diffuseTexture = new BABYLON.Texture("resources/textures/metal.jpg", scene);
 
+    const red = new BABYLON.StandardMaterial("red", scene);
+    red.diffuseColor = BABYLON.Color3.Red();
+
     const bottomWall = BABYLON.MeshBuilder.CreateBox('bottomWall', {height: 10, width: 100, depth: 1000}, scene);
     const topWall = BABYLON.MeshBuilder.CreateBox('topWall', {height: 10, width: 100, depth: 1000}, scene);
     const leftWall = BABYLON.MeshBuilder.CreateBox('leftWall', {height: 100, width: 10, depth: 1000}, scene);
@@ -49,7 +52,7 @@ const createScene = () => {
 
     let spaceShip = BABYLON.MeshBuilder.CreateBox("spaceship", {height: 1, width: 4, depth: 5}, scene);
     spaceShip.material = wireframe;
-    spaceShip.ellipsoid = new BABYLON.Vector3(4, 1, 2);
+    spaceShip.ellipsoid = new BABYLON.Vector3(4, 1, 3);
     spaceShip.checkCollisions = true;
     let local = renderAxes(3, scene);
     local.parent = spaceShip;
@@ -73,6 +76,7 @@ const createScene = () => {
         inputMap[evt.sourceEvent.key] = evt.sourceEvent.type == "keydown";
     }));
 
+    let spaceShipCollided = false;
     // Game/Render loop
     scene.onBeforeRenderObservable.add(() => {
         const stabilizationStepAngle: number = BABYLON.Tools.ToRadians(1);
@@ -130,7 +134,17 @@ const createScene = () => {
         const desiredZ = spaceShip.position.z + 1;
         spaceShip.moveWithCollisions(new BABYLON.Vector3(0, 0 , 1));
 
-        if (spaceShip.position.z > 5 && desiredZ - spaceShip.position.z > 0.5) {
+        const originalSpaceshipMaterials = spaceShip.getChildMeshes().map((mesh) => mesh.material);
+
+        if (!spaceShipCollided && spaceShip.position.z > 5 && desiredZ - spaceShip.position.z > 0.5) {
+            spaceShipCollided = true;
+            spaceShip.getChildMeshes().forEach((mesh) => mesh.material = red);
+            document.getElementById('overlay').classList.remove('hidden');
+            setTimeout(() => {
+                spaceShip.getChildMeshes().forEach((mesh, index) => mesh.material = originalSpaceshipMaterials[index]);
+                document.getElementById('overlay').classList.add('hidden');
+                spaceShipCollided = false;
+            }, 1000);
             // alert('Oh, U DED!!');
         }
     });
