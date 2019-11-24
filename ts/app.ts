@@ -17,7 +17,12 @@ const createScene = () => {
     const origin = BABYLON.MeshBuilder.CreateBox("origin", {size: 0.5}, scene);
     origin.position.set(0, 0, 0);
 
-    let spaceShip = BABYLON.MeshBuilder.CreateBox('spaceship', {height: 1, width: 4, depth: 5}, scene);
+    Array.from({length: 200}, (_, index: number) => {
+        const box = BABYLON.MeshBuilder.CreateBox(`box_${index}`, {size: 0.5}, scene);
+        box.position.set(0, 0, index*5);
+    });
+
+    let spaceShip = BABYLON.MeshBuilder.CreateBox("spaceship", {height: 1, width: 4, depth: 5}, scene);
     spaceShip.material = wireframe;
     let local = renderAxes(3, scene);
     local.parent = spaceShip;
@@ -32,13 +37,53 @@ const createScene = () => {
         camera.lockedTarget = model[0];
     });
 
+    var inputMap = {};
+    scene.actionManager = new BABYLON.ActionManager(scene);
+    scene.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnKeyDownTrigger, function (evt) {
+        inputMap[evt.sourceEvent.key] = evt.sourceEvent.type == "keydown";
+    }));
+    scene.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnKeyUpTrigger, function (evt) {
+        inputMap[evt.sourceEvent.key] = evt.sourceEvent.type == "keydown";
+    }));
+
+    // Game/Render loop
+    scene.onBeforeRenderObservable.add(() => {
+        if (inputMap["w"] || inputMap["ArrowUp"]) {
+            spaceShip.position.y += 0.1;
+            spaceShip.rotation.x = BABYLON.Tools.ToRadians(-30);
+        }
+        if (inputMap["a"] || inputMap["ArrowLeft"]) {
+            spaceShip.position.x -= 0.1;
+            spaceShip.rotation.z = BABYLON.Tools.ToRadians(20);
+        }
+        if (inputMap["s"] || inputMap["ArrowDown"]) {
+            spaceShip.position.y -= 0.1;
+            spaceShip.rotation.x = BABYLON.Tools.ToRadians(30);
+        }
+        if (inputMap["d"] || inputMap["ArrowRight"]) {
+            spaceShip.position.x += 0.1;
+            spaceShip.rotation.z = BABYLON.Tools.ToRadians(-20);
+        }
+
+        const oneDegree: number = BABYLON.Tools.ToRadians(1);
+        ['x','y','z'].forEach(axis => {
+            if (spaceShip.rotation[axis] !== 0) {
+                spaceShip.rotation[axis] += spaceShip.rotation[axis] > 0 ? -oneDegree : oneDegree;
+            }
+            if (spaceShip.rotation[axis] >= -oneDegree && spaceShip.rotation[axis] <= oneDegree) {
+                spaceShip.rotation[axis] = 0;
+            }
+        });
+
+        spaceShip.position.z += 1;
+    });
+
     return scene;
 };
 
 const scene = createScene();
 
 engine.runRenderLoop(() => {
-    // scene.getMeshByName("spaceship").rotate(new BABYLON.Vector3(0, 0, 1), 0.01);
     scene.render();
 });
 
