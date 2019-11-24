@@ -20,9 +20,16 @@ const createScene = () => {
         inputMap[evt.sourceEvent.key] = evt.sourceEvent.type == "keydown";
     }));
 
-    const light1 = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(1, 1, 0), scene);
-    const light2 = new BABYLON.PointLight("light2", new BABYLON.Vector3(0, 1, -1), scene);
-    // const light = new BABYLON.SpotLight("star", new BABYLON.Vector3(0, 0, 1000), new BABYLON.Vector3(0, 0, -1), Math.PI / 2, 2 , scene);
+    window.addEventListener('spaceship-collided', () => {
+        document.getElementById('overlay').classList.remove('hidden');
+        setTimeout(() => {
+            document.getElementById('overlay').classList.add('hidden');
+        }, 500);
+    });
+
+    const ambient = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(1, 1, 0), scene);
+    ambient.intensity = 0.5;
+
     const origin = BABYLON.MeshBuilder.CreateBox("origin", {size: 0.5}, scene);
     origin.position.set(0, 0, 0);
 
@@ -47,18 +54,15 @@ const createScene = () => {
     leftWall.checkCollisions = true;
     rightWall.checkCollisions = true;
 
-    Array.from({length: 200}, (_, index: number) => {
+    Array.from({length: 50}, (_, index: number) => {
         const box = BABYLON.MeshBuilder.CreateBox(`box_${index}`, {size: 1}, scene);
         box.position.set(0, 0, (index+2)*75);
         box.checkCollisions = true;
     });
 
     let spaceShip = new Spaceship(scene, inputMap);
-
-    // const camera = new BABYLON.ArcRotateCamera('Camera', Math.PI / 2, Math.PI / 2, 2, new BABYLON.Vector3(0, 0, 7), scene);
     const camera = new BABYLON.FollowCamera("Camera", new BABYLON.Vector3(0, 0, -10), scene, spaceShip.wrapper);
     camera.rotationOffset = 180;
-    // camera.attachControl(canvas, true);
 
     scene.onBeforeRenderObservable.add(() => {
         spaceShip.update();

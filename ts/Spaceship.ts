@@ -18,7 +18,7 @@ export class Spaceship {
     public hasCollided: boolean = false;
 
     private scene: Scene;
-    private debugMode: boolean = false;
+    private debugMode: boolean = true;
     private userInputs: IUserInput;
 
     private defaultMaterials: Material[];
@@ -45,6 +45,9 @@ export class Spaceship {
             this.defaultMaterials = this.wrapper.getChildMeshes().map((mesh) => mesh.material);
             this.damagedMaterial = this.scene.getMaterialByName("red");
         });
+
+        const flashLight = new BABYLON.SpotLight("shipLight", new BABYLON.Vector3(0, 0, 0), new BABYLON.Vector3(0, 0, 1), Math.PI / 6, 10 , scene);
+        flashLight.parent = this.wrapper;
     }
 
     update() {
@@ -84,6 +87,10 @@ export class Spaceship {
     }
 
     private moveForward() {
+        if (this.hasCollided) {
+            this.wrapper.position.add(new BABYLON.Vector3(0, 0 , forwardSpeed));
+            return;
+        }
         const desiredZ = this.wrapper.position.z + forwardSpeed;
         this.wrapper.moveWithCollisions(new BABYLON.Vector3(0, 0 , forwardSpeed));
         const hasTriggeredCollision = !this.hasCollided && desiredZ - this.wrapper.position.z > forwardSpeed/2;
@@ -91,10 +98,10 @@ export class Spaceship {
         if (hasTriggeredCollision) {
             this.hasCollided = true;
             this.wrapper.getChildMeshes().forEach((mesh) => mesh.material = this.damagedMaterial);
-            document.getElementById('overlay').classList.remove('hidden');
+            window.dispatchEvent(new Event('spaceship-collided'));
+
             setTimeout(() => {
                 this.wrapper.getChildMeshes().forEach((mesh, index) => mesh.material = this.defaultMaterials[index]);
-                document.getElementById('overlay').classList.add('hidden');
                 this.hasCollided = false;
             }, 1000);
         }
