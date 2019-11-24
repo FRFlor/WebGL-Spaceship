@@ -17,6 +17,30 @@ const createScene = () => {
     const origin = BABYLON.MeshBuilder.CreateBox("origin", {size: 0.5}, scene);
     origin.position.set(0, 0, 0);
 
+    const metal = new BABYLON.StandardMaterial("grass0", scene);
+    metal.diffuseTexture = new BABYLON.Texture("resources/textures/metal.jpg", scene);
+
+    const bottomWall = BABYLON.MeshBuilder.CreateBox('bottomWall', {height: 10, width: 100, depth: 1000}, scene);
+    const topWall = BABYLON.MeshBuilder.CreateBox('topWall', {height: 10, width: 100, depth: 1000}, scene);
+    const leftWall = BABYLON.MeshBuilder.CreateBox('leftWall', {height: 100, width: 10, depth: 1000}, scene);
+    const rightWall = BABYLON.MeshBuilder.CreateBox('rightWall', {height: 100, width: 10, depth: 1000}, scene);
+    bottomWall.material = metal;
+    topWall.material = metal;
+    leftWall.material = metal;
+    rightWall.material = metal;
+    bottomWall.position.z = 500;
+    topWall.position.z = 500;
+    leftWall.position.z = 500;
+    rightWall.position.z = 500;
+    bottomWall.position.y = -25;
+    topWall.position.y = 25;
+    leftWall.position.x = -25;
+    rightWall.position.x = 25;
+    bottomWall.checkCollisions = true;
+    topWall.checkCollisions = true;
+    leftWall.checkCollisions = true;
+    rightWall.checkCollisions = true;
+
     Array.from({length: 200}, (_, index: number) => {
         const box = BABYLON.MeshBuilder.CreateBox(`box_${index}`, {size: 1}, scene);
         box.position.set(0, 0, (index+2)*75);
