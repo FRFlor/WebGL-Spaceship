@@ -48,29 +48,53 @@ const createScene = () => {
 
     // Game/Render loop
     scene.onBeforeRenderObservable.add(() => {
+        const stabilizationStepAngle: number = BABYLON.Tools.ToRadians(1);
+        const maneuverStepAngle: number = BABYLON.Tools.ToRadians(3);
+        const maxManeuverAngle: number = BABYLON.Tools.ToRadians(20);
+
         if (inputMap["w"] || inputMap["ArrowUp"]) {
             spaceShip.position.y += 0.1;
-            spaceShip.rotation.x = BABYLON.Tools.ToRadians(-30);
+            if (spaceShip.rotation.x >= -maxManeuverAngle) {
+                spaceShip.addRotation(-maneuverStepAngle, 0, 0);
+            }
         }
         if (inputMap["a"] || inputMap["ArrowLeft"]) {
             spaceShip.position.x -= 0.1;
-            spaceShip.rotation.z = BABYLON.Tools.ToRadians(20);
+            if (spaceShip.rotation.z <= maxManeuverAngle) {
+                spaceShip.addRotation(0, 0, maneuverStepAngle);
+            }
         }
         if (inputMap["s"] || inputMap["ArrowDown"]) {
             spaceShip.position.y -= 0.1;
-            spaceShip.rotation.x = BABYLON.Tools.ToRadians(30);
+            if (spaceShip.rotation.x <= maxManeuverAngle) {
+                spaceShip.addRotation(maneuverStepAngle, 0, 0);
+            }
         }
         if (inputMap["d"] || inputMap["ArrowRight"]) {
             spaceShip.position.x += 0.1;
-            spaceShip.rotation.z = BABYLON.Tools.ToRadians(-20);
+            if (spaceShip.rotation.z >= -maxManeuverAngle) {
+                spaceShip.addRotation(0, 0, -maneuverStepAngle);
+            }
         }
 
-        const oneDegree: number = BABYLON.Tools.ToRadians(1);
+        const rotationAxisByKeyboardInput = {
+            w: 'x',
+            s: 'x',
+            a: 'z',
+            d: 'z'
+        };
+
         ['x','y','z'].forEach(axis => {
-            if (spaceShip.rotation[axis] !== 0) {
-                spaceShip.rotation[axis] += spaceShip.rotation[axis] > 0 ? -oneDegree : oneDegree;
+            const isKeyPressed = Object.keys(rotationAxisByKeyboardInput).some( key => {
+                return rotationAxisByKeyboardInput[key] === axis && inputMap[key]
+            });
+            if (isKeyPressed) {
+                return;
             }
-            if (spaceShip.rotation[axis] >= -oneDegree && spaceShip.rotation[axis] <= oneDegree) {
+            if (spaceShip.rotation[axis] !== 0) {
+                spaceShip.rotation[axis] += spaceShip.rotation[axis] > 0 ? -stabilizationStepAngle : stabilizationStepAngle;
+            }
+            if (spaceShip.rotation[axis] >= -stabilizationStepAngle && spaceShip.rotation[axis] <= stabilizationStepAngle) {
                 spaceShip.rotation[axis] = 0;
             }
         });
