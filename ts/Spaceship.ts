@@ -46,7 +46,7 @@ export class Spaceship {
             this.damagedMaterial = this.scene.getMaterialByName("red");
         });
 
-        const flashLight = new BABYLON.SpotLight("shipLight", new BABYLON.Vector3(0, 0, 0), new BABYLON.Vector3(0, 0, 1), Math.PI / 6, 10 , scene);
+        const flashLight = new BABYLON.PointLight("shipLight", new BABYLON.Vector3(0, 0, 0), scene);
         flashLight.parent = this.wrapper;
     }
 
@@ -88,7 +88,7 @@ export class Spaceship {
 
     private moveForward() {
         if (this.hasCollided) {
-            this.wrapper.position.add(new BABYLON.Vector3(0, 0 , forwardSpeed));
+            this.wrapper.position.z += forwardSpeed;
             return;
         }
         const desiredZ = this.wrapper.position.z + forwardSpeed;

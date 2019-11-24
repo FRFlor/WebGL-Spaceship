@@ -27,8 +27,8 @@ const createScene = () => {
         }, 500);
     });
 
-    const ambient = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(1, 1, 0), scene);
-    ambient.intensity = 0.5;
+    // const ambient = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(1, 1, 0), scene);
+    // ambient.intensity = 0.5;
 
     const origin = BABYLON.MeshBuilder.CreateBox("origin", {size: 0.5}, scene);
     origin.position.set(0, 0, 0);
@@ -54,7 +54,7 @@ const createScene = () => {
     leftWall.checkCollisions = true;
     rightWall.checkCollisions = true;
 
-    Array.from({length: 50}, (_, index: number) => {
+    Array.from({length: 25}, (_, index: number) => {
         const box = BABYLON.MeshBuilder.CreateBox(`box_${index}`, {size: 1}, scene);
         box.position.set(0, 0, (index+2)*75);
         box.checkCollisions = true;
