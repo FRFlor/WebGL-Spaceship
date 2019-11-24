@@ -22,14 +22,6 @@ const createScene = () => {
         inputMap[evt.sourceEvent.key] = evt.sourceEvent.type == "keydown";
     }));
 
-    window.addEventListener('spaceship-collided', () => {
-        document.getElementById('overlay').classList.remove('hidden');
-        setTimeout(() => {
-            document.getElementById('overlay').classList.add('hidden');
-        }, 500);
-    });
-
-
     const bottomWall = BABYLON.MeshBuilder.CreateBox('bottomWall', {height: 10, width: 100, depth: 1000}, scene);
     const topWall = BABYLON.MeshBuilder.CreateBox('topWall', {height: 10, width: 100, depth: 1000}, scene);
     const leftWall = BABYLON.MeshBuilder.CreateBox('leftWall', {height: 100, width: 10, depth: 1000}, scene);
@@ -58,6 +50,21 @@ const createScene = () => {
     });
 
     let spaceShip = new Spaceship(scene, inputMap);
+
+    window.addEventListener('spaceship-collided', () => {
+        document.getElementById('overlay').classList.remove('hidden');
+        spaceShip.changeHealthByAmount(-1);
+        if (spaceShip.healthStatus.current <= 0) {
+            spaceShip.wrapper.position.z = 0;
+            spaceShip.wrapper.position.y = 0;
+            spaceShip.wrapper.position.x = 0;
+            spaceShip.restoreHealth();
+        }
+        setTimeout(() => {
+            document.getElementById('overlay').classList.add('hidden');
+        }, 500);
+    });
+
     const camera = new BABYLON.FollowCamera("Camera", new BABYLON.Vector3(0, 0, -10), scene, spaceShip.wrapper);
     camera.rotationOffset = 180;
 

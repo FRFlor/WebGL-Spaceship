@@ -16,6 +16,8 @@ export class Spaceship {
     public wrapper: Mesh;
     public isInvulnerable: boolean = true;
 
+    private health: number = 5;
+    private maxHealth: number = 5;
     private scene: Scene;
     private debugMode: boolean = true;
     private userInputs: IUserInput;
@@ -55,13 +57,39 @@ export class Spaceship {
         this.engineParticles.start();
         this.initializeSmokeParticles();
         setTimeout(() => this.isInvulnerable = false, 1000);
-
     }
 
     update() {
         this.handleUserInput();
         this.stabilizeFlight();
         this.moveForward();
+    }
+
+    get healthStatus() {
+        return {
+            current: this.health,
+            max: this.maxHealth
+        }
+    }
+
+    changeHealthByAmount(amount: number) {
+        this.health += amount;
+        if (this.healthFraction >= 0.5) {
+            this.smokeParticles.stop();
+            this.engineParticles.start();
+        } else if (this.healthFraction < 0.5 && this.healthFraction >= 0.25) {
+            this.smokeParticles.start();
+            this.engineParticles.start();
+        } else {
+            this.smokeParticles.start();
+            this.engineParticles.stop();
+        }
+    }
+
+    restoreHealth() {
+        this.engineParticles.start();
+        this.smokeParticles.stop();
+        this.health = this.maxHealth;
     }
 
     private handleUserInput() {
@@ -105,8 +133,6 @@ export class Spaceship {
 
         if (hasTriggeredCollision) {
             this.isInvulnerable = true;
-            this.engineParticles.stop();
-            this.smokeParticles.start();
             this.wrapper.getChildMeshes().forEach((mesh) => mesh.material = this.damagedMaterial);
             window.dispatchEvent(new Event('spaceship-collided'));
 
@@ -233,6 +259,9 @@ export class Spaceship {
         this.smokeParticles.minEmitPower = 1;
         this.smokeParticles.maxEmitPower = 3;
         this.smokeParticles.updateSpeed = 0.005;
+    }
 
+    private get healthFraction(): number {
+        return this.health/this.maxHealth;
     }
 }
