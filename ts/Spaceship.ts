@@ -1,10 +1,12 @@
+import * as BABYLON from "babylonjs";
 import {Mesh, ParticleSystem} from "babylonjs";
 import {Scene} from "babylonjs/scene";
-import * as BABYLON from "babylonjs";
 import {renderAxes} from "./helpers";
 import {IUserInput} from "../types";
 import {Material} from "babylonjs/Materials/material";
 import {FollowCamera} from "babylonjs/Cameras/followCamera";
+import {ParticleSystemSet} from "babylonjs/Particles/particleSystemSet";
+import {IParticleSystem} from "babylonjs/Particles/IParticleSystem";
 
 const stabilizationStepAngle: number = BABYLON.Tools.ToRadians(1);
 const maneuverStepAngle: number = BABYLON.Tools.ToRadians(3);
@@ -32,13 +34,14 @@ export class Spaceship {
 
     private engineParticles: ParticleSystem;
     private smokeParticles: ParticleSystem;
+    private explosionParticles: ParticleSystemSet;
 
     constructor(scene: Scene, userInputs: IUserInput) {
         this.scene = scene;
         this.userInputs = userInputs;
 
         this.wrapper = BABYLON.MeshBuilder.CreateBox("spaceship", {height: 1, width: 4, depth: 5}, scene);
-        this.wrapper.material = this.debugMode ? this.scene.getMaterialByName('wireframe') : this.scene.getMaterialByName('invisible');
+        this.wrapper.material = this.debugMode ? this.scene.getMaterialByName("wireframe") : this.scene.getMaterialByName("invisible");
         this.wrapper.ellipsoid = new BABYLON.Vector3(4, 1, 3);
         this.wrapper.checkCollisions = true;
 
@@ -61,6 +64,13 @@ export class Spaceship {
         this.initializeEngineParticles();
         this.engineParticles.start();
         this.initializeSmokeParticles();
+        BABYLON.ParticleHelper.CreateAsync("explosion", this.scene)
+            .then((explosionSystemSet: ParticleSystemSet) => {
+                this.explosionParticles = explosionSystemSet;
+                this.explosionParticles.systems.forEach((system: IParticleSystem) => {
+                    system.emitter = this.wrapper;
+                });
+            });
         setTimeout(() => this.isInvulnerable = false, 1000);
 
         this.camera = new BABYLON.FollowCamera("Camera", new BABYLON.Vector3(0, 0, -5), scene, this.wrapper);
@@ -73,6 +83,9 @@ export class Spaceship {
     }
 
     update() {
+        if (this.scene.activeCamera !== this.rearViewCamera) {
+            this.rearViewCamera.position.z = this.wrapper.position.z - 100;
+        }
         this.handleUserInput();
         this.stabilizeFlight();
         this.moveForward();
@@ -120,28 +133,28 @@ export class Spaceship {
         this.updateTurbo();
 
         if (this.userInputs["w"]) {
-            this.wrapper.moveWithCollisions(new BABYLON.Vector3(0, maneuverSpeed , 0));
+            this.wrapper.moveWithCollisions(new BABYLON.Vector3(0, maneuverSpeed, 0));
             if (this.wrapper.rotation.x >= -maxManeuverAngle) {
                 this.wrapper.addRotation(-maneuverStepAngle, 0, 0);
             }
         }
 
         if (this.userInputs["s"]) {
-            this.wrapper.moveWithCollisions(new BABYLON.Vector3(0, -maneuverSpeed , 0));
+            this.wrapper.moveWithCollisions(new BABYLON.Vector3(0, -maneuverSpeed, 0));
             if (this.wrapper.rotation.x <= maxManeuverAngle) {
                 this.wrapper.addRotation(maneuverStepAngle, 0, 0);
             }
         }
 
         if (this.userInputs["a"]) {
-            this.wrapper.moveWithCollisions(new BABYLON.Vector3(-maneuverSpeed, 0 , 0));
+            this.wrapper.moveWithCollisions(new BABYLON.Vector3(-maneuverSpeed, 0, 0));
             if (this.wrapper.rotation.z <= maxManeuverAngle) {
                 this.wrapper.addRotation(0, 0, maneuverStepAngle);
             }
         }
 
         if (this.userInputs["d"]) {
-            this.wrapper.moveWithCollisions(new BABYLON.Vector3(maneuverSpeed, 0 , 0));
+            this.wrapper.moveWithCollisions(new BABYLON.Vector3(maneuverSpeed, 0, 0));
             if (this.wrapper.rotation.z >= -maxManeuverAngle) {
                 this.wrapper.addRotation(0, 0, -maneuverStepAngle);
             }
@@ -154,13 +167,18 @@ export class Spaceship {
             return;
         }
         const desiredZ = this.wrapper.position.z + this.forwardSpeed;
-        this.wrapper.moveWithCollisions(new BABYLON.Vector3(0, 0 , this.forwardSpeed));
-        const hasTriggeredCollision = !this.isInvulnerable && desiredZ - this.wrapper.position.z > this.forwardSpeed/2;
+        this.wrapper.moveWithCollisions(new BABYLON.Vector3(0, 0, this.forwardSpeed));
+        const hasTriggeredCollision = !this.isInvulnerable && desiredZ - this.wrapper.position.z > this.forwardSpeed / 2;
 
         if (hasTriggeredCollision) {
             this.isInvulnerable = true;
             this.wrapper.getChildMeshes().forEach((mesh) => mesh.material = this.damagedMaterial);
-            window.dispatchEvent(new Event('spaceship-collided'));
+            this.changeHealthByAmount(-1);
+            window.dispatchEvent(new Event("spaceship-collided"));
+
+            if (this.health === 0) {
+                this.onDeath();
+            }
 
             setTimeout(() => {
                 this.wrapper.getChildMeshes().forEach((mesh, index) => mesh.material = this.defaultMaterials[index]);
@@ -171,14 +189,14 @@ export class Spaceship {
 
     private stabilizeFlight() {
         const rotationAxisByKeyboardInput = {
-            w: 'x',
-            s: 'x',
-            a: 'z',
-            d: 'z'
+            w: "x",
+            s: "x",
+            a: "z",
+            d: "z"
         };
 
-        ['x','y','z'].forEach(axis => {
-            const isKeyPressed = Object.keys(rotationAxisByKeyboardInput).some( key => {
+        ["x", "y", "z"].forEach(axis => {
+            const isKeyPressed = Object.keys(rotationAxisByKeyboardInput).some(key => {
                 return rotationAxisByKeyboardInput[key] === axis && this.userInputs[key]
             });
 
@@ -252,9 +270,9 @@ export class Spaceship {
         this.smokeParticles.maxEmitBox = new BABYLON.Vector3(1, 0.5, -1.5); // To...
 
         // Colors of all particles
-        this.smokeParticles.color1 = new BABYLON.Color4(1, 165/255, 0, 1.0);
+        this.smokeParticles.color1 = new BABYLON.Color4(1, 165 / 255, 0, 1.0);
         this.smokeParticles.color2 = new BABYLON.Color4(1, 0, 0, 1.0);
-        this.smokeParticles.colorDead = new BABYLON.Color4(128/255, 128/255, 128/255, 1);
+        this.smokeParticles.colorDead = new BABYLON.Color4(128 / 255, 128 / 255, 128 / 255, 1);
 
         // Size of each particle (random between...
         this.smokeParticles.minSize = 0.2;
@@ -288,6 +306,10 @@ export class Spaceship {
     }
 
     private get healthFraction(): number {
-        return this.health/this.maxHealth;
+        return this.health / this.maxHealth;
+    }
+
+    private onDeath() {
+        this.explosionParticles.start();
     }
 }

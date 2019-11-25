@@ -66,7 +66,6 @@ const createScene = () => {
 
     window.addEventListener("spaceship-collided", () => {
         document.getElementById("overlay").classList.remove("hidden");
-        spaceShip.changeHealthByAmount(-1);
         setTimeout(() => {
             if (spaceShip.healthStatus.current > 0) {
                 document.getElementById("overlay").classList.add("hidden");
@@ -110,18 +109,24 @@ engine.runRenderLoop(() => {
     const {current, max} = spaceShip.healthStatus;
     document.getElementById("health").innerText = `Health: ${current} / ${max}`;
     document.getElementById("exit").innerText = `Distance: ${Math.max(0, Math.floor(1000 - spaceShip.wrapper.position.z))}`;
-    document.getElementById("score").innerText = `Score: ${score}`;
+    document.getElementById("score").innerText = `Score: ${Math.max(0,score)}`;
 
-    if (spaceShip.healthStatus.current <= 0 || score <= 0) {
+    if (spaceShip.healthStatus.current <= 0) {
+        scene.activeCamera = spaceShip.rearViewCamera;
         document.getElementById("overlay").classList.remove("hidden");
-        isGameOver = true;
+        setTimeout(() => isGameOver = true, 1000);
+    }
+    if (score <= 0) {
+        scene.activeCamera = spaceShip.rearViewCamera;
+        document.getElementById("overlay").classList.remove("hidden");
+        setTimeout(() => isGameOver = true, 1000);
     }
 
     if (spaceShip.wrapper.position.z > 1000) {
         spaceShip.isInvulnerable = true;
         scene.activeCamera = spaceShip.rearViewCamera;
         spaceJunks.forEach(junk => junk.dispose());
-        setTimeout(() => isGameOver = true, 1500);
+        setTimeout(() => isGameOver = true, 2500);
     }
 });
 
