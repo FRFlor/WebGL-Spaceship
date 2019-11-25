@@ -10,7 +10,8 @@ const stabilizationStepAngle: number = BABYLON.Tools.ToRadians(1);
 const maneuverStepAngle: number = BABYLON.Tools.ToRadians(3);
 const maxManeuverAngle: number = BABYLON.Tools.ToRadians(20);
 const maneuverSpeed: number = 0.3;
-const forwardSpeed: number = 1;
+const regularSpeed: number = 1;
+const turboSpeed: number = 2.5;
 
 
 export class Spaceship {
@@ -24,6 +25,7 @@ export class Spaceship {
     private scene: Scene;
     private debugMode: boolean = true;
     private userInputs: IUserInput;
+    private isInTurbo: boolean = false;
 
     private defaultMaterials: Material[];
     private damagedMaterial: Material;
@@ -83,6 +85,10 @@ export class Spaceship {
         }
     }
 
+    get forwardSpeed(): number {
+        return this.isInTurbo ? turboSpeed : regularSpeed;
+    }
+
     changeHealthByAmount(amount: number) {
         this.health += amount;
         if (this.healthFraction >= 0.5) {
@@ -103,8 +109,15 @@ export class Spaceship {
         this.health = this.maxHealth;
     }
 
+    private updateTurbo() {
+        this.isInTurbo = this.userInputs[" "];
+        this.camera.radius = this.isInTurbo ? 10 : 5;
+        this.engineParticles.minSize = this.isInTurbo ? 0.5 : 0.1;
+        this.engineParticles.maxSize = this.isInTurbo ? 0.6 : 0.2;
+    }
+
     private handleUserInput() {
-        this.scene.activeCamera = this.userInputs["r"] ? this.rearViewCamera : this.camera;
+        this.updateTurbo();
 
         if (this.userInputs["w"]) {
             this.wrapper.moveWithCollisions(new BABYLON.Vector3(0, maneuverSpeed , 0));
@@ -137,12 +150,12 @@ export class Spaceship {
 
     private moveForward() {
         if (this.isInvulnerable) {
-            this.wrapper.position.z += forwardSpeed;
+            this.wrapper.position.z += this.forwardSpeed;
             return;
         }
-        const desiredZ = this.wrapper.position.z + forwardSpeed;
-        this.wrapper.moveWithCollisions(new BABYLON.Vector3(0, 0 , forwardSpeed));
-        const hasTriggeredCollision = !this.isInvulnerable && desiredZ - this.wrapper.position.z > forwardSpeed/2;
+        const desiredZ = this.wrapper.position.z + this.forwardSpeed;
+        this.wrapper.moveWithCollisions(new BABYLON.Vector3(0, 0 , this.forwardSpeed));
+        const hasTriggeredCollision = !this.isInvulnerable && desiredZ - this.wrapper.position.z > this.forwardSpeed/2;
 
         if (hasTriggeredCollision) {
             this.isInvulnerable = true;
