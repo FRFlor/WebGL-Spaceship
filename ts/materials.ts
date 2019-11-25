@@ -13,6 +13,13 @@ export function registerMaterials(scene: Scene) {
 
     const metal = new BABYLON.StandardMaterial("metal", scene);
     metal.diffuseTexture = new BABYLON.Texture("resources/textures/metal.jpg", scene);
+
+    const transparentGreen = new BABYLON.StandardMaterial("transparent-green", scene);
+    transparentGreen.diffuseColor = BABYLON.Color3.Green();
+    transparentGreen.alpha = 0.2;
+
+    const golden = new BABYLON.StandardMaterial("gold", scene);
+    golden.diffuseColor = BABYLON.Color3.Yellow();
 }
 
 
