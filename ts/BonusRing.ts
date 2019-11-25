@@ -2,6 +2,7 @@ import {Mesh} from "babylonjs/Meshes/mesh";
 import {Scene} from "babylonjs/scene";
 import {Vector3} from "babylonjs/Maths/math";
 import * as BABYLON from "babylonjs";
+import {randomBetween} from "./helpers";
 
 export class BonusRing {
     public wrapper: Mesh;
@@ -10,7 +11,7 @@ export class BonusRing {
 
     constructor(scene: Scene,  position?: Vector3) {
         this.scene = scene;
-        const radius = Math.floor(Math.random() * 4) + 1;
+        const radius = randomBetween(3,5);
         this.wrapper = BABYLON.MeshBuilder.CreateDisc("bonus-ring", {radius}, scene);
 
         [[-radius, 0], [radius, 0], [0, radius], [0, -radius]].forEach(([x, y]) => {

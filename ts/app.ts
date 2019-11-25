@@ -3,11 +3,14 @@ import "babylonjs-loaders";
 import {Spaceship} from "./Spaceship";
 import {registerMaterials} from "./materials";
 import {BonusRing} from "./BonusRing";
+import {SpaceJunk} from "./SpaceJunk";
+import {randomBetween} from "./helpers";
 
 const canvas: HTMLCanvasElement = document.getElementById("renderCanvas") as HTMLCanvasElement;
 const engine = new BABYLON.Engine(canvas, true);
 let spaceShip;
 let bonusRings: BonusRing[] = [];
+let spaceJunks: SpaceJunk[] = [];
 let score: number = 1000;
 
 const createScene = () => {
@@ -17,7 +20,15 @@ const createScene = () => {
 
     registerMaterials(scene);
 
-    bonusRings.push(new BonusRing(scene, new BABYLON.Vector3(0, 0, 40)));
+    bonusRings = Array.from({length: 10}, () => {
+        const position = new BABYLON.Vector3(randomBetween(-20, 20), randomBetween(-20, 20), randomBetween(100, 900));
+       return  new BonusRing(scene, position);
+    });
+
+    spaceJunks = Array.from({length: 100}, () => {
+        const position = new BABYLON.Vector3(randomBetween(-20, 20), randomBetween(-20, 20), randomBetween(50, 1500));
+        return new SpaceJunk(scene, position);
+    });
 
     const inputMap = {};
     scene.actionManager = new BABYLON.ActionManager(scene);
@@ -49,11 +60,6 @@ const createScene = () => {
     leftWall.checkCollisions = true;
     rightWall.checkCollisions = true;
 
-    Array.from({length: 25}, (_, index: number) => {
-        const box = BABYLON.MeshBuilder.CreateBox(`box_${index}`, {size: 1}, scene);
-        box.position.set(0, 0, (index + 2) * 75);
-        box.checkCollisions = true;
-    });
 
     spaceShip = new Spaceship(scene, inputMap);
 
@@ -90,6 +96,13 @@ engine.runRenderLoop(() => {
     score--;
     bonusRings.forEach((ring: BonusRing) => {
         ring.update(spaceShip.wrapper);
+    });
+
+    spaceJunks.forEach(junk => {
+        junk.update();
+        if (junk.wrapper.position.z < spaceShip.wrapper.position.z - 50) {
+            junk.wrapper.position.z = 1000 + randomBetween(5, 300);
+        }
     });
     bonusRings = bonusRings.filter(ring => !ring.hasCollided);
 
