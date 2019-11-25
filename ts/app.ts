@@ -12,6 +12,7 @@ let spaceShip;
 let bonusRings: BonusRing[] = [];
 let spaceJunks: SpaceJunk[] = [];
 let score: number = 1000;
+let isGameOver: boolean = false;
 
 const createScene = () => {
     const scene = new BABYLON.Scene(engine);
@@ -63,16 +64,9 @@ const createScene = () => {
 
     spaceShip = new Spaceship(scene, inputMap);
 
-    let camera2 = new BABYLON.FreeCamera("FreeCamera", new BABYLON.Vector3(0, 0, 0), scene)
     window.addEventListener("spaceship-collided", () => {
         document.getElementById("overlay").classList.remove("hidden");
         spaceShip.changeHealthByAmount(-1);
-        if (spaceShip.healthStatus.current <= 0) {
-            spaceShip.wrapper.position.z = 0;
-            spaceShip.wrapper.position.y = 0;
-            spaceShip.wrapper.position.x = 0;
-            spaceShip.restoreHealth();
-        }
         setTimeout(() => {
             document.getElementById("overlay").classList.add("hidden");
         }, 500);
@@ -84,6 +78,18 @@ const createScene = () => {
 
     scene.onBeforeRenderObservable.add(() => {
         spaceShip.update();
+
+        bonusRings.forEach((ring: BonusRing) => {
+            ring.update(spaceShip.wrapper);
+        });
+
+        spaceJunks.forEach(junk => {
+            junk.update();
+            if (junk.wrapper.position.z < spaceShip.wrapper.position.z - 50) {
+                junk.wrapper.position.z = 1000 + randomBetween(5, 300);
+            }
+        });
+        bonusRings = bonusRings.filter(ring => !ring.hasCollided);
     });
 
     return scene;
@@ -92,24 +98,20 @@ const createScene = () => {
 const scene = createScene();
 
 engine.runRenderLoop(() => {
+    if (isGameOver) {
+        return;
+    }
     scene.render();
     score--;
-    bonusRings.forEach((ring: BonusRing) => {
-        ring.update(spaceShip.wrapper);
-    });
-
-    spaceJunks.forEach(junk => {
-        junk.update();
-        if (junk.wrapper.position.z < spaceShip.wrapper.position.z - 50) {
-            junk.wrapper.position.z = 1000 + randomBetween(5, 300);
-        }
-    });
-    bonusRings = bonusRings.filter(ring => !ring.hasCollided);
 
     const {current, max} = spaceShip.healthStatus;
     document.getElementById("health").innerText = `Health: ${current} / ${max}`;
     document.getElementById("exit").innerText = `Distance: ${Math.floor(1000 - spaceShip.wrapper.position.z)}`;
     document.getElementById("score").innerText = `Score: ${score}`;
+
+    if (spaceShip.wrapper.position.z > 1000 || spaceShip.healthStatus.current <= 0 || score < 0) {
+        isGameOver = true;
+    }
 });
 
 window.addEventListener("resize", function () {
