@@ -39,4 +39,8 @@ export class SpaceJunk {
         this.wrapper.rotation.y += this.rotationVector.y;
         this.wrapper.rotation.z += this.rotationVector.z;
     }
+
+    dispose() {
+        this.wrapper.dispose();
+    }
 }

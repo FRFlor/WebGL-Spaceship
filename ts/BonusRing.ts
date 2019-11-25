@@ -32,7 +32,6 @@ export class BonusRing {
     update(target: Mesh) {
         this.wrapper.addRotation(0, 0, 0.1);
         this.checkForCollisionWithMesh(target);
-
     }
 
     private checkForCollisionWithMesh(mesh: Mesh) {
