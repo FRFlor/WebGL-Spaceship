@@ -4,6 +4,7 @@ import * as BABYLON from "babylonjs";
 import {renderAxes} from "./helpers";
 import {IUserInput} from "../types";
 import {Material} from "babylonjs/Materials/material";
+import {FollowCamera} from "babylonjs/Cameras/followCamera";
 
 const stabilizationStepAngle: number = BABYLON.Tools.ToRadians(1);
 const maneuverStepAngle: number = BABYLON.Tools.ToRadians(3);
@@ -16,6 +17,8 @@ export class Spaceship {
     public wrapper: Mesh;
     public isInvulnerable: boolean = true;
 
+    private camera: FollowCamera;
+    private rearViewCamera: FollowCamera;
     private health: number = 5;
     private maxHealth: number = 5;
     private scene: Scene;
@@ -57,6 +60,14 @@ export class Spaceship {
         this.engineParticles.start();
         this.initializeSmokeParticles();
         setTimeout(() => this.isInvulnerable = false, 1000);
+
+        this.camera = new BABYLON.FollowCamera("Camera", new BABYLON.Vector3(0, 0, -5), scene, this.wrapper);
+        this.camera.rotationOffset = 180;
+
+        this.rearViewCamera = new BABYLON.FollowCamera("rear-view-camera", new BABYLON.Vector3(0, 0, -5), scene, this.wrapper);
+        this.rearViewCamera.rotationOffset = 0;
+        this.rearViewCamera.heightOffset = 0;
+        this.rearViewCamera.radius = 20;
     }
 
     update() {
@@ -93,6 +104,8 @@ export class Spaceship {
     }
 
     private handleUserInput() {
+        this.scene.activeCamera = this.userInputs["r"] ? this.rearViewCamera : this.camera;
+
         if (this.userInputs["w"]) {
             this.wrapper.moveWithCollisions(new BABYLON.Vector3(0, maneuverSpeed , 0));
             if (this.wrapper.rotation.x >= -maxManeuverAngle) {

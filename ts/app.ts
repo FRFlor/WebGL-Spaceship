@@ -52,6 +52,7 @@ const createScene = () => {
 
     spaceShip = new Spaceship(scene, inputMap);
 
+    let camera2 = new BABYLON.FreeCamera('FreeCamera', new BABYLON.Vector3(0, 0, 0), scene)
     window.addEventListener('spaceship-collided', () => {
         document.getElementById('overlay').classList.remove('hidden');
         spaceShip.changeHealthByAmount(-1);
@@ -65,9 +66,6 @@ const createScene = () => {
             document.getElementById('overlay').classList.add('hidden');
         }, 500);
     });
-
-    const camera = new BABYLON.FollowCamera("Camera", new BABYLON.Vector3(0, 0, -10), scene, spaceShip.wrapper);
-    camera.rotationOffset = 180;
 
     scene.onBeforeRenderObservable.add(() => {
         spaceShip.update();
