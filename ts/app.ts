@@ -5,6 +5,7 @@ import {registerMaterials} from "./materials";
 
 const canvas: HTMLCanvasElement = document.getElementById("renderCanvas") as HTMLCanvasElement;
 const engine = new BABYLON.Engine(canvas, true);
+let spaceShip;
 
 const createScene = () => {
     const scene = new BABYLON.Scene(engine);
@@ -49,7 +50,7 @@ const createScene = () => {
         box.checkCollisions = true;
     });
 
-    let spaceShip = new Spaceship(scene, inputMap);
+    spaceShip = new Spaceship(scene, inputMap);
 
     window.addEventListener('spaceship-collided', () => {
         document.getElementById('overlay').classList.remove('hidden');
@@ -79,6 +80,9 @@ const scene = createScene();
 
 engine.runRenderLoop(() => {
     scene.render();
+    const {current, max} = spaceShip.healthStatus;
+    document.getElementById('health').innerText = `Health: ${current} / ${max}`;
+    document.getElementById('exit').innerText = `Distance: ${Math.floor(1000 - spaceShip.wrapper.position.z)}`;
 });
 
 window.addEventListener("resize", function () {
