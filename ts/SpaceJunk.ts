@@ -11,6 +11,7 @@ export class SpaceJunk {
     private rotationVector: Vector3;
 
     constructor(scene: Scene, startPosition: Vector3) {
+        this.scene = scene;
         const size = randomBetween(1, 10);
         this.speed = -randomBetween(1, 20)/10;
         const random = Math.random();
@@ -34,7 +35,7 @@ export class SpaceJunk {
     }
 
     update() {
-        this.wrapper.position.z += this.speed;
+        this.wrapper.moveWithCollisions(new BABYLON.Vector3(0, 0, this.speed));
         this.wrapper.rotation.x += this.rotationVector.x;
         this.wrapper.rotation.y += this.rotationVector.y;
         this.wrapper.rotation.z += this.rotationVector.z;
