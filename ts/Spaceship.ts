@@ -22,8 +22,8 @@ export class Spaceship {
 
     private camera: FollowCamera;
     private rearViewCamera: FollowCamera;
-    private health: number = 5;
-    private maxHealth: number = 5;
+    private health: number = 3;
+    private maxHealth: number = 3;
     private scene: Scene;
     private debugMode: boolean = true;
     private userInputs: IUserInput;
@@ -104,22 +104,16 @@ export class Spaceship {
 
     changeHealthByAmount(amount: number) {
         this.health += amount;
-        if (this.healthFraction >= 0.5) {
+        if (this.healthFraction >= 0.7) {
             this.smokeParticles.stop();
             this.engineParticles.start();
-        } else if (this.healthFraction < 0.5 && this.healthFraction >= 0.25) {
+        } else if (this.healthFraction < 0.7 && this.healthFraction >= 0.4) {
             this.smokeParticles.start();
             this.engineParticles.start();
         } else {
             this.smokeParticles.start();
             this.engineParticles.stop();
         }
-    }
-
-    restoreHealth() {
-        this.engineParticles.start();
-        this.smokeParticles.stop();
-        this.health = this.maxHealth;
     }
 
     private updateTurbo() {
