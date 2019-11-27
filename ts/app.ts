@@ -5,6 +5,7 @@ import {registerMaterials} from "./materials";
 import {BonusRing} from "./BonusRing";
 import {SpaceJunk} from "./SpaceJunk";
 import {randomBetween} from "./helpers";
+import Tunnel from "./Tunnel";
 
 const canvas: HTMLCanvasElement = document.getElementById("renderCanvas") as HTMLCanvasElement;
 const engine = new BABYLON.Engine(canvas, true);
@@ -16,20 +17,7 @@ let isGameOver: boolean = false;
 
 const createScene = () => {
     const scene = new BABYLON.Scene(engine);
-    const ambient = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(1, 1, 0), scene);
-    ambient.intensity = 0.5;
-
     registerMaterials(scene);
-
-    bonusRings = Array.from({length: 10}, () => {
-        const position = new BABYLON.Vector3(randomBetween(-20, 20), randomBetween(-20, 20), randomBetween(100, 900));
-       return  new BonusRing(scene, position);
-    });
-
-    spaceJunks = Array.from({length: 100}, () => {
-        const position = new BABYLON.Vector3(randomBetween(-20, 20), randomBetween(-20, 20), randomBetween(50, 1500));
-        return new SpaceJunk(scene, position);
-    });
 
     const inputMap = {};
     scene.actionManager = new BABYLON.ActionManager(scene);
@@ -40,27 +28,20 @@ const createScene = () => {
         inputMap[evt.sourceEvent.key] = evt.sourceEvent.type == "keydown";
     }));
 
-    const bottomWall = BABYLON.MeshBuilder.CreateBox("bottomWall", {height: 10, width: 100, depth: 1000}, scene);
-    const topWall = BABYLON.MeshBuilder.CreateBox("topWall", {height: 10, width: 100, depth: 1000}, scene);
-    const leftWall = BABYLON.MeshBuilder.CreateBox("leftWall", {height: 100, width: 10, depth: 1000}, scene);
-    const rightWall = BABYLON.MeshBuilder.CreateBox("rightWall", {height: 100, width: 10, depth: 1000}, scene);
-    bottomWall.material = scene.getMaterialByName("metal");
-    topWall.material = scene.getMaterialByName("metal");
-    leftWall.material = scene.getMaterialByName("metal");
-    rightWall.material = scene.getMaterialByName("metal");
-    bottomWall.position.z = 500;
-    topWall.position.z = 500;
-    leftWall.position.z = 500;
-    rightWall.position.z = 500;
-    bottomWall.position.y = -25;
-    topWall.position.y = 25;
-    leftWall.position.x = -25;
-    rightWall.position.x = 25;
-    bottomWall.checkCollisions = true;
-    topWall.checkCollisions = true;
-    leftWall.checkCollisions = true;
-    rightWall.checkCollisions = true;
+    const ambient = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(1, 1, 0), scene);
+    ambient.intensity = 0.5;
 
+    new Tunnel(scene);
+
+    bonusRings = Array.from({length: 10}, () => {
+        const position = new BABYLON.Vector3(randomBetween(-20, 20), randomBetween(-20, 20), randomBetween(100, 900));
+       return  new BonusRing(scene, position);
+    });
+
+    spaceJunks = Array.from({length: 100}, () => {
+        const position = new BABYLON.Vector3(randomBetween(-20, 20), randomBetween(-20, 20), randomBetween(50, 1500));
+        return new SpaceJunk(scene, position);
+    });
 
     spaceShip = new Spaceship(scene, inputMap);
 
