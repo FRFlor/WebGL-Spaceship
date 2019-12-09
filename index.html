@@ -72,6 +72,39 @@
         #instructions {
             width: 50%;
         }
+
+        #extra-score {
+            color: hsla(120, 61%, 34%, 0);
+            font-size: 3rem;
+            font-weight: bolder;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .float-up {
+            color: hsla(120, 61%, 34%, 0);
+            animation: float-up;
+            animation-duration: 2s;
+        }
+
+        @keyframes float-up {
+            0% {
+                color: hsla(120, 61%, 34%, 1);
+                -webkit-text-stroke: 1px #e2eaa7;
+                transform: translate(-50%, 0);
+            }
+
+            33% {
+                opacity: 100%;
+            }
+
+            100% {
+                opacity: 0%;
+                transform: translate(-50%, -15rem);
+            }
+        }
     </style>
     <script src="ts/app.ts" defer></script>
 </head>
@@ -93,6 +126,10 @@
     <div id="end-screen" class="hidden">
         <div class="big-text" id="end-text">Game Over!</div>
         <div id="score-report" class="big-text">--</div>
+    </div>
+
+    <div id="extra-score">
+        +500
     </div>
     <canvas id="renderCanvas" touch-action="none"></canvas>
 </div>

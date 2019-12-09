@@ -69,6 +69,8 @@ const createScene = () => {
     });
 
     window.addEventListener("bonus-ring-destroyed", () => {
+        document.getElementById("extra-score").classList.add("float-up");
+        setTimeout(() => document.getElementById("extra-score").classList.remove("float-up"), 2000);
         score += 500;
     });
 
