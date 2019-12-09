@@ -19,7 +19,7 @@
         }
 
         .hidden {
-            display: none;
+            display: none !important;
         }
 
         #overlay {
@@ -47,6 +47,31 @@
             height: 100%;
             touch-action: none;
         }
+
+        #menu-addons {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            text-align: center;
+            pointer-events: none;
+            flex-direction: column;
+        }
+
+        #text {
+            font-size: 5rem;
+            -webkit-text-stroke: 2px #263238;
+            color: hsl(0, 0%, 86%);
+            font-weight: bolder;
+        }
+
+        #instructions {
+            width: 50%;
+        }
     </style>
     <script src="ts/app.ts" defer></script>
 </head>
@@ -54,14 +79,18 @@
 <body>
 <div class="wrapper">
     <div id="overlay" class="hidden"></div>
-    <div id="HUD">
+    <div id="HUD" class="hidden">
         <div id="health">- -</div>
         <div id="exit">- -</div>
         <div id="score">- -</div>
     </div>
+    <div id="menu-addons">
+        <div id="text">NES - Not Enough Space!</div>
+
+        <img id="instructions" src="resources/images/Instructions.png" alt="Keyboard Instructions">
+    </div>
     <canvas id="renderCanvas" touch-action="none"></canvas>
 </div>
-//touch-action="none" for best results from PEP
 </body>
 
 </html>

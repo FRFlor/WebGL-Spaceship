@@ -3,7 +3,11 @@
     "module": "commonjs",
     "target": "esnext",
     "sourceMap": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "types": [
+      "babylonjs",
+      "babylonjs-gui"
+    ]
   },
   "exclude": [
     "node_modules"

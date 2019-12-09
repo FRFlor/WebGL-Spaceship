@@ -25,7 +25,7 @@ export class Spaceship {
     private health: number = 3;
     private maxHealth: number = 3;
     private scene: Scene;
-    private debugMode: boolean = true;
+    private debugMode: boolean = false;
     private userInputs: IUserInput;
     private isInTurbo: boolean = false;
 

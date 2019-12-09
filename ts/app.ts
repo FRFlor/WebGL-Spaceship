@@ -1,4 +1,5 @@
 import * as BABYLON from "babylonjs";
+import * as GUI from "babylonjs-gui";
 import "babylonjs-loaders";
 import {Spaceship} from "./Spaceship";
 import {registerMaterials} from "./materials";
@@ -13,11 +14,24 @@ let spaceShip;
 let bonusRings: BonusRing[] = [];
 let spaceJunks: SpaceJunk[] = [];
 let score: number = 350;
-let isGameOver: boolean = false;
+let isGameOver: boolean = true;
 
 const createScene = () => {
     const scene = new BABYLON.Scene(engine);
     registerMaterials(scene);
+
+    var advancedTexture = GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+
+    const button = GUI.Button.CreateSimpleButton("start-game-button", "Start Game");
+    button.width = 0.2;
+    button.height = "40px";
+    button.color = "white";
+    button.background = "green";
+    advancedTexture.addControl(button);
+    button.onPointerClickObservable.add(() => {
+       window.dispatchEvent(new Event('start-game'));
+       button.isVisible = false;
+    });
 
     const inputMap = {};
     scene.actionManager = new BABYLON.ActionManager(scene);
@@ -58,20 +72,17 @@ const createScene = () => {
         score += 500;
     });
 
-    scene.onBeforeRenderObservable.add(() => {
-        spaceShip.update();
-    });
-
     return scene;
 };
 
-const scene = createScene();
+let scene = createScene();
 
 engine.runRenderLoop(() => {
+    scene.render();
     if (isGameOver) {
         return;
     }
-    scene.render();
+    spaceShip.update();
 
     bonusRings.forEach((ring: BonusRing) => {
         ring.update(spaceShip.wrapper);
@@ -109,6 +120,17 @@ engine.runRenderLoop(() => {
         spaceJunks.forEach(junk => junk.dispose());
         setTimeout(() => isGameOver = true, 2500);
     }
+});
+
+window.addEventListener("start-game", () => {
+    isGameOver = false;
+    document.getElementById("menu-addons").classList.add("hidden");
+    document.getElementById("HUD").classList.remove("hidden");
+});
+
+window.addEventListener("restart-game", () => {
+    scene = createScene();
+    score = 350;
 });
 
 window.addEventListener("resize", function () {
