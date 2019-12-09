@@ -29,8 +29,8 @@ const createScene = () => {
     button.background = "green";
     advancedTexture.addControl(button);
     button.onPointerClickObservable.add(() => {
-       window.dispatchEvent(new Event('start-game'));
-       button.isVisible = false;
+        window.dispatchEvent(new Event("start-game"));
+        button.isVisible = false;
     });
 
     const inputMap = {};
@@ -49,7 +49,7 @@ const createScene = () => {
 
     bonusRings = Array.from({length: 10}, () => {
         const position = new BABYLON.Vector3(randomBetween(-20, 20), randomBetween(-20, 20), randomBetween(100, 900));
-       return  new BonusRing(scene, position);
+        return new BonusRing(scene, position);
     });
 
     spaceJunks = Array.from({length: 100}, () => {
@@ -101,36 +101,41 @@ engine.runRenderLoop(() => {
     const {current, max} = spaceShip.healthStatus;
     document.getElementById("health").innerText = `Health: ${current} / ${max}`;
     document.getElementById("exit").innerText = `Distance: ${Math.max(0, Math.floor(1000 - spaceShip.wrapper.position.z))}`;
-    document.getElementById("score").innerText = `Score: ${Math.max(0,score)}`;
+    document.getElementById("score").innerText = `Score: ${Math.max(0, score)}`;
 
     if (spaceShip.healthStatus.current <= 0) {
         scene.activeCamera = spaceShip.rearViewCamera;
         document.getElementById("overlay").classList.remove("hidden");
-        setTimeout(() => isGameOver = true, 1000);
+        setTimeout(onGameOver, 1000);
     }
     if (score <= 0) {
         scene.activeCamera = spaceShip.rearViewCamera;
         document.getElementById("overlay").classList.remove("hidden");
-        setTimeout(() => isGameOver = true, 1000);
+        setTimeout(onGameOver, 1000);
     }
 
     if (spaceShip.wrapper.position.z > 1000) {
         spaceShip.isInvulnerable = true;
         scene.activeCamera = spaceShip.rearViewCamera;
         spaceJunks.forEach(junk => junk.dispose());
-        setTimeout(() => isGameOver = true, 2500);
+        setTimeout(onGameOver, 2500);
     }
 });
 
+function onGameOver() {
+    document.getElementById("end-screen").classList.remove("hidden");
+    document.getElementById("HUD").classList.add("hidden");
+    document.getElementById("score-report").innerText = `Final Score: ${Math.max(0, score)}`;
+    document.getElementById("end-text").innerText = spaceShip.healthStatus.current > 0 && score > 0
+        ? "Congratulations! You've escaped!"
+        : "Game Over!";
+    isGameOver = true;
+}
+
 window.addEventListener("start-game", () => {
     isGameOver = false;
-    document.getElementById("menu-addons").classList.add("hidden");
+    document.getElementById("introduction").classList.add("hidden");
     document.getElementById("HUD").classList.remove("hidden");
-});
-
-window.addEventListener("restart-game", () => {
-    scene = createScene();
-    score = 350;
 });
 
 window.addEventListener("resize", function () {
