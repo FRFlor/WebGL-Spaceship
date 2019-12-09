@@ -304,6 +304,9 @@ export class Spaceship {
     }
 
     private onDeath() {
+        this.engineParticles.stop();
+        this.smokeParticles.stop();
+        this.wrapper.getChildMeshes().forEach(child => child.isVisible = false);
         this.explosionParticles.start();
     }
 }
