@@ -102,7 +102,7 @@ engine.runRenderLoop(() => {
 
     const {current, max} = spaceShip.healthStatus;
     document.getElementById("health").innerText = `Health: ${current} / ${max}`;
-    document.getElementById("exit").innerText = `Distance: ${Math.max(0, Math.floor(1000 - spaceShip.wrapper.position.z))}`;
+    document.getElementById("distance").innerText = `${Math.max(0, Math.floor(1000 - spaceShip.wrapper.position.z))} m`;
     document.getElementById("score").innerText = `Score: ${Math.max(0, score)}`;
 
     if (spaceShip.healthStatus.current <= 0) {

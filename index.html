@@ -34,13 +34,32 @@
 
         #HUD {
             position: absolute;
-            top: 2rem;
-            left: 2rem;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
             font-size: xx-large;
             color: white;
-            background-color: hsla(0, 70%, 50%, 0.5);
-            padding: 1rem;
+            display: grid;
+            padding: 2rem 2rem 4rem;
+            grid-template-areas: 'score .' 'health distance';
         }
+
+        #health {
+            align-self: self-end;
+            grid-area: health;
+        }
+
+        #distance {
+            grid-area: distance;
+            align-self: self-end;
+            justify-self: self-end;
+        }
+
+        #score {
+            grid-area: score;
+        }
+
 
         #renderCanvas {
             width: 100%;
@@ -114,7 +133,7 @@
     <div id="overlay" class="hidden"></div>
     <div id="HUD" class="hidden">
         <div id="health">- -</div>
-        <div id="exit">- -</div>
+        <div id="distance">- -</div>
         <div id="score">- -</div>
     </div>
     <div id="introduction">
