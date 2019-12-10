@@ -43,12 +43,32 @@
             display: grid;
             padding: 2rem 2rem 4rem;
             grid-template-areas: 'score .' 'health distance';
+            pointer-events: none;
         }
 
         #health {
             align-self: self-end;
             grid-area: health;
         }
+
+        progress[value] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 70%;
+            height: 2rem;
+        }
+
+        progress::-moz-progress-bar { background: green; }
+        progress::-webkit-progress-value { background: green; }
+        progress { color: green; }
+
+        progress[value="2"]::-moz-progress-bar { background: orange; }
+        progress[value="2"]::-webkit-progress-value { background: orange; }
+        progress[value="2"] { color: orange; }
+
+        progress[value="1"]::-moz-progress-bar { background: red; }
+        progress[value="1"]::-webkit-progress-value { background: red; }
+        progress[value="1"] { color: red; }
 
         #distance {
             grid-area: distance;
@@ -132,7 +152,7 @@
 <div class="wrapper">
     <div id="overlay" class="hidden"></div>
     <div id="HUD" class="hidden">
-        <div id="health">- -</div>
+        <div id="health">Health: <progress min="0" max="3" value="3"/></div>
         <div id="distance">- -</div>
         <div id="score">- -</div>
     </div>

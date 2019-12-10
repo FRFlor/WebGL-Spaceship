@@ -101,7 +101,7 @@ engine.runRenderLoop(() => {
     score--;
 
     const {current, max} = spaceShip.healthStatus;
-    document.getElementById("health").innerText = `Health: ${current} / ${max}`;
+    document.getElementById("health").innerHTML = `Health: <progress min="0" max="${max}" value="${current}"/>`;
     document.getElementById("distance").innerText = `${Math.max(0, Math.floor(1000 - spaceShip.wrapper.position.z))} m`;
     document.getElementById("score").innerText = `Score: ${Math.max(0, score)}`;
 
